@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' ws: wss: http: https:; media-src 'self' https:; img-src 'self' data: blob: https:; font-src 'self'; frame-src 'self';" />
+
+    <title>إدارة العمليات - بث الدرون من المحافظات السورية</title>
+    <meta name="description" content="وزارة الداخلية - إدارة العمليات - فرع الاستطلاع الجوي - بث الدرون من المحافظات السورية" />
+    <meta name="author" content="Hercules" />
+    <link rel="icon" type="image/png" href="./assets/logo-vertical.png" />
+
+    <!-- Fonts: bundled locally (Cairo for Arabic). System fallbacks for the rest. -->
+    <link href="./assets/fonts/cairo.css" rel="stylesheet" />
+
+    <!-- Detect dark mode preference and set the class before next-themes loads. This avoids a flash of unstyled content (FOUC) when the page loads. -->
+    <script>
+      try {
+        let theme = localStorage.getItem("theme");
+        if (theme === "system" || !theme) {
+          let prefersDark = window.matchMedia(
+            "(prefers-color-scheme: dark)",
+          ).matches;
+          theme = prefersDark ? "dark" : "light";
+        }
+        document.documentElement.classList.add(theme);
+      } catch (e) {}
+    </script>
+
+    <script type="module" crossorigin src="./assets/index-CyVH16Qt.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DSICsROi.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
