@@ -15,13 +15,8 @@ if not exist "node_modules" (
     exit /b
 )
 
-REM تشغيل WebSocket relay للمرشد (للاتصال من APK)
-start /B "مرشد 6789" cmd /c "node server/ws-relay.js"
-echo [🎙] WebSocket relay على port 6789 (لـ APK)
-
-REM تشغيل السيرفر الموحد (HTTP + WebSocket)
 echo [🚀] تشغيل برنامج إدارة العمليات...
-start /B "سيرفر 3000" cmd /c "node server/index.js"
+start /B cmd /c "node server/index.js"
 
 REM فتح المتصفح بعد تأخير بسيط
 timeout /t 2 /nobreak >nul
