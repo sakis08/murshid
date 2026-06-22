@@ -12,10 +12,7 @@ where node >nul 2>&1
 if %errorlevel% neq 0 (
     echo [⚠] Node.js غير موجود!
     echo.
-    echo تحميل Node.js...
-    echo.
-    REM تحميل Node.js (نسخة ويندوز 64 بت)
-    echo افتح الرابط التالي في المتصفح واضغط Next Next Install:
+    echo حمّل Node.js من الرابط التالي:
     echo https://nodejs.org/dist/v22.22.3/node-v22.22.3-x64.msi
     echo.
     echo بعد التثبيت، أعد تشغيل هذا الملف.
@@ -29,16 +26,6 @@ echo [✅] Node.js موجود:
 node --version
 echo.
 
-REM تثبيت الاعتماديات
-echo [📦] جاري تثبيت الاعتماديات...
-call npm install
-if %errorlevel% neq 0 (
-    echo [!!] خطأ في التثبيت. حاول تشغيل: npm install
-    pause
-    exit /b
-)
-
-echo.
 echo [✅] تم الإعداد بنجاح!
 echo.
 echo شغّل البرنامج عن طريق فتح run.bat
