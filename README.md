@@ -1,28 +1,33 @@
-# مرشد — Murshid
+# إدارة العمليات - بث الدرون
 
-تطبيق البث الصوتي من غرفة العمليات لجهاز التحكم (DJI RC Pro / RC Plus).
+نظام إدارة عمليات الاستطلاع الجوي للطائرات بدون طيار (DJI).
 
-## بناء APK
+## التشغيل السريع
 
-### الطريقة 1: GitHub Actions (تلقائي)
+1. **تثبيت Node.js** من https://nodejs.org (v22 أو أحدث)
+2. شغّل `setup.bat` مرة واحدة فقط (يثبت الاعتماديات)
+3. شغّل `run.bat` لبدء البرنامج
+4. افتح المتصفح على `http://localhost:3000`
 
-1. ارفع المشروع لمخزن GitHub
-2. GitHub Actions يبني APK تلقائياً
-3. نزل APK من `Actions` → `Build APK` → `murshid-apk`
+## المتطلبات
 
-### الطريقة 2: Android Studio (يدوي)
+- Windows 10/11
+- Node.js v22+
+- اتصال إنترنت فقط للتحميل الأولي
+
+## المميزات
+
+- خريطة تفاعلية مع نقاط الاهتمام
+- إدارة الطائرات والبعثات
+- عرض بث مباشر للدرون
+- تنبيهات وأصوات إنذار
+- دعم كامل للغة العربية
+
+## هيكل المشروع
 
 ```
-File → Open → android/Murshid
-Build → Build Bundle(s) / APK(s) → APK
+server/index.js   — سيرفر HTTP يخدم الملفات
+dist/             — الملفات الجاهزة للمتصفح
+run.bat           — تشغيل البرنامج
+setup.bat         — تثبيت الاعتماديات
 ```
-
-### الطريقة 3: سطر أوامر
-
-```
-cd android/Murshid
-./gradlew assembleDebug
-```
-
-الـ APK موجود في:
-`app/build/outputs/apk/debug/app-debug.apk`
