@@ -40,7 +40,7 @@ class AudioService : Service() {
 
         audioTrack = AudioTrack.Builder()
             .setAudioAttributes(AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_COMMUNICATION)
+                .setUsage(AudioAttributes.USAGE_MEDIA)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                 .build())
             .setAudioFormat(AudioFormat.Builder()
