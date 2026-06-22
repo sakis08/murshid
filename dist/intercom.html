@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/intercom-manifest.json">
+<title>مرشد – بث صوتي</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Tahoma',sans-serif;background:#0f172a;color:#e2e8f0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;text-align:center}
+.logo{font-size:48px;margin-bottom:8px}
+h1{font-size:18px;font-weight:bold;margin-bottom:4px}
+.sub{font-size:11px;color:#64748b;margin-bottom:24px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;width:100%;max-width:320px}
+input{width:100%;height:40px;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:8px 12px;color:#e2e8f0;font-size:14px;outline:none;margin-bottom:8px;text-align:center}
+input:focus{border-color:#3b82f6}
+button{width:100%;height:40px;border:none;border-radius:8px;font-size:13px;font-weight:bold;cursor:pointer;transition:.2s;margin-top:4px}
+.connect{background:#3b82f6;color:#fff}
+.connect:hover{background:#2563eb}
+.disconnect{background:#ef4444;color:#fff}
+.status{margin-top:12px;font-size:11px;padding:6px 12px;border-radius:6px}
+.ok{color:#22c55e;background:#22c55e15}
+.err{color:#ef4444;background:#ef444415}
+.wait{color:#eab308;background:#eab30815}
+.footer{font-size:9px;color:#475569;margin-top:24px}
+.badge{display:inline-block;padding:2px 10px;border-radius:4px;font-size:10px;background:#3b82f620;color:#60a5fa;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="logo">🎙</div>
+<h1>مرشد</h1>
+<div class="sub">بث صوتي من غرفة العمليات</div>
+<div class="card">
+  <input id="ipInput" type="text" placeholder="IP السيرفر (مثال: 192.168.1.100)" />
+  <input id="nameInput" type="text" placeholder="اسم البث (مثال: حلب)" />
+  <div id="status" class="status wait">⏳ غير متصل</div>
+  <button id="connectBtn" class="connect">🔗 اتصال</button>
+</div>
+<div class="badge">يشتغل تلقائياً مع كل تشغيل — احفظ الصفحة للشاشة الرئيسية</div>
+<div class="footer">غرفة العمليات — البث والمراقبة</div>
+
+<script>
+const ipIn = document.getElementById('ipInput');
+const nameIn = document.getElementById('nameInput');
+const statusEl = document.getElementById('status');
+const btn = document.getElementById('connectBtn');
+
+let ws = null;
+let audioCtx = null;
+let audioQueue = [];
+let isPlaying = false;
+
+const savedIp = localStorage.getItem('murshid_ip');
+const savedName = localStorage.getItem('murshid_name');
+if (savedIp) ipIn.value = savedIp;
+if (savedName) nameIn.value = savedName;
+
+function setStatus(text, cls) {
+  statusEl.textContent = text;
+  statusEl.className = 'status ' + cls;
+}
+
+function playPcm(audioData) {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 });
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  try {
+    const src = audioCtx.createBufferSource();
+    const buf = audioCtx.createBuffer(1, audioData.length, 48000);
+    const ch = buf.getChannelData(0);
+    for (let i = 0; i < audioData.length; i++) ch[i] = audioData[i] / 128 - 1;
+    src.buffer = buf;
+    src.connect(audioCtx.destination);
+    src.start();
+  } catch(e) { console.error('Audio play error:', e); }
+}
+
+function connect() {
+  const ip = ipIn.value.trim();
+  const name = nameIn.value.trim();
+  if (!ip || !name) { setStatus('⚠ أدخل IP واسم البث', 'err'); return; }
+
+  localStorage.setItem('murshid_ip', ip);
+  localStorage.setItem('murshid_name', name);
+  setStatus('⏳ جاري الاتصال...', 'wait');
+  btn.disabled = true;
+
+  ws = new WebSocket(`ws://${ip}:3000?stream=${encodeURIComponent(name)}&role=controller`);
+  ws.binaryType = 'arraybuffer';
+
+  ws.onopen = () => {
+    setStatus('🟢 متصل — استمع', 'ok');
+    btn.textContent = '🔴 قطع الاتصال';
+    btn.className = 'disconnect';
+    btn.disabled = false;
+  };
+
+  ws.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'audio') {
+        const raw = atob(msg.data);
+        const arr = new Uint8Array(raw.length);
+        for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+        playPcm(arr);
+      }
+    } catch {}
+  };
+
+  ws.onclose = () => {
+    setStatus('🔴 قطع الاتصال', 'err');
+    btn.textContent = '🔗 اتصال';
+    btn.className = 'connect';
+    btn.disabled = false;
+    ws = null;
+    // auto reconnect after 3s
+    setTimeout(() => { if (!ws) connect(); }, 3000);
+  };
+
+  ws.onerror = () => {
+    setStatus('🔴 خطأ في الاتصال', 'err');
+    btn.disabled = false;
+  };
+}
+
+function disconnect() {
+  if (ws) { ws.close(); ws = null; }
+  setStatus('🔴 قطع الاتصال', 'err');
+  btn.textContent = '🔗 اتصال';
+  btn.className = 'connect';
+}
+
+btn.onclick = () => { if (ws && ws.readyState === 1) disconnect(); else connect(); };
+
+// Auto-connect on load if saved
+if (savedIp && savedName) setTimeout(connect, 500);
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/intercom-sw.js').catch(() => {});
+}
+
+// Keep audio context alive
+setInterval(() => {
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}, 10000);
+</script>
+</body>
+</html>
