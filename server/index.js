@@ -2,8 +2,6 @@ import http from "http";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { WebSocketServer } from "ws";
-import { rooms, forwardAudio } from "./rooms.js";
 
 const PORT = 3000;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -37,38 +35,6 @@ const server = http.createServer((req, res) => {
   });
 });
 
-const wss = new WebSocketServer({ server });
-
-wss.on("connection", (ws, req) => {
-  const url = new URL(req.url, "http://localhost");
-  const stream = url.searchParams.get("stream") || "unknown";
-  const role = url.searchParams.get("role") || "listener";
-
-  if (!rooms.has(stream)) rooms.set(stream, new Set());
-  rooms.get(stream).add(ws);
-  console.log(`[3000] ${role} connected — ${stream} (total: ${rooms.get(stream).size})`);
-
-  ws.send(JSON.stringify({ type: "connected", stream, role }));
-
-  ws.on("message", (data) => {
-    try {
-      const msg = JSON.parse(data.toString());
-      if (msg.type === "audio" && msg.stream) {
-        forwardAudio(msg, ws);
-      }
-    } catch {}
-  });
-
-  ws.on("close", () => {
-    const room = rooms.get(stream);
-    if (room) {
-      room.delete(ws);
-      if (room.size === 0) rooms.delete(stream);
-    }
-    console.log(`[3000] ${role} disconnected — ${stream}`);
-  });
-});
-
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`[3000] HTTP + WebSocket on http://0.0.0.0:${PORT}`);
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
