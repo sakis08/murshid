@@ -7,14 +7,6 @@ echo   إدارة العمليات - بث الدرون
 echo ==============================
 echo.
 
-REM تأكد من وجود node_modules
-if not exist "node_modules" (
-    echo [!!] الرجاء تشغيل setup.bat أولاً
-    echo.
-    pause
-    exit /b
-)
-
 echo [🚀] تشغيل برنامج إدارة العمليات...
 start /B cmd /c "node server/index.js"
 
